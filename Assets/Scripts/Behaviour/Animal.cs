@@ -64,8 +64,10 @@ public class Animal : LivingEntity {
         genes = Genes.RandomGenes (1);
 
         // Change Color depending on gender
-        gameObject.transform.GetChild(0).GetChild(1).GetComponent<SkinnedMeshRenderer>().materials[0].SetColor("_Color", (genes.isMale) ? maleColour : femaleColour);
-        gameObject.transform.GetChild(0).GetChild(2).GetComponent<SkinnedMeshRenderer>().materials[1].SetColor("_Color", (genes.isMale) ? maleColour : femaleColour);
+        if (species == Species.Rabbit) {
+            gameObject.transform.GetChild(0).GetChild(1).GetComponent<SkinnedMeshRenderer>().materials[0].SetColor("_Color", (genes.isMale) ? maleColour : femaleColour);
+            gameObject.transform.GetChild(0).GetChild(2).GetComponent<SkinnedMeshRenderer>().materials[1].SetColor("_Color", (genes.isMale) ? maleColour : femaleColour);
+        }
 
         ChooseNextAction ();
     }
@@ -121,6 +123,7 @@ public class Animal : LivingEntity {
                 Mate ();
             }
         } else {
+            gameObject.GetComponent<Animator>().SetBool("eating", false);
             if (currentAction == CreatureAction.GoingToMate || currentAction == CreatureAction.WaitingToMate || biggestUrge == horny && thirst < criticalPercent && hunger < criticalPercent) {
                 if (genes.isMale) {
                     FindMate();
@@ -169,6 +172,7 @@ public class Animal : LivingEntity {
         } else if (mateSource) {
             mateTarget = mateSource;
             currentAction = CreatureAction.GoingToMate;
+            foodTarget = null;
             CreatePath (mateTarget.coord);
 
             mateTarget.mateTarget = this;
@@ -192,7 +196,7 @@ public class Animal : LivingEntity {
         // }
     }
     protected virtual void WaitMate () {
-        if (mateTarget) {
+        if (mateTarget && mateTarget.currentAction == CreatureAction.GoingToMate) {
             currentAction = CreatureAction.WaitingToMate;
             LookAt(mateTarget.coord);
             gameObject.GetComponent<Animator>().SetBool("waiting", true);
@@ -205,6 +209,7 @@ public class Animal : LivingEntity {
                 currentAction = CreatureAction.SearchingForMate;
             }*/
             currentAction = CreatureAction.SearchingForMate;
+            mateTarget = null;
         }
     }
 
@@ -243,6 +248,13 @@ public class Animal : LivingEntity {
                 break;
             case CreatureAction.GoingToMate:
                 if (Coord.AreNeighbours (coord, mateTarget.coord)) {
+
+                    // Match horniness
+                    float minHorny = Mathf.Min(horny, mateTarget.horny);
+                    horny = minHorny;
+                    mateTarget.horny = minHorny;
+
+                    // Look at each other and mate
                     LookAt (mateTarget.coord);
                     currentAction = CreatureAction.Mating;
                     mateTarget.currentAction = CreatureAction.Mating;
@@ -255,6 +267,12 @@ public class Animal : LivingEntity {
                 }
                 break;
             case CreatureAction.WaitingToMate:
+                if (mateTarget.currentAction != CreatureAction.GoingToMate) {
+                    mateTarget = null;
+                    currentAction = CreatureAction.SearchingForMate;
+                    break;
+                }
+                gameObject.GetComponent<Animator>().SetBool("waiting", true);
                 if (Coord.AreNeighbours (coord, mateTarget.coord)) {
                     LookAt (mateTarget.coord);
                     //currentAction = CreatureAction.Mating;
@@ -300,6 +318,7 @@ public class Animal : LivingEntity {
         // handle interactions
         if (currentAction == CreatureAction.Eating) {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
+            gameObject.GetComponent<Animator>().SetBool("eating", true);
             if (foodTarget && hunger > 0) {
                 float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / eatDuration);
                 if (foodTarget.species == Species.Plant) {
@@ -312,6 +331,7 @@ public class Animal : LivingEntity {
             }
         } else if (currentAction == CreatureAction.Drinking) {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
+            gameObject.GetComponent<Animator>().SetBool("eating", true);
             if (thirst > 0) {
                 thirst -= Time.deltaTime * 1 / drinkDuration;
                 thirst = Mathf.Clamp01 (thirst);
@@ -339,6 +359,7 @@ public class Animal : LivingEntity {
         if (horny <= 0f && mateTarget.horny <= 0f)
         {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
+            mateTarget.mateTarget = null;
             mateTarget = null;
         }
 

@@ -334,16 +334,32 @@ public class Environment : MonoBehaviour {
                         float scale = 1 + ((float) spawnPrng.NextDouble () * 2 - 1) * maxScaleDeviation;
 
                         // Randomize colour
-                        float col = Mathf.Lerp (minCol, 1, (float) spawnPrng.NextDouble ());
-                        float r = col + ((float) spawnPrng.NextDouble () * 2 - 1) * colVariationFactor;
-                        float g = col + ((float) spawnPrng.NextDouble () * 2 - 1) * colVariationFactor;
-                        float b = col + ((float) spawnPrng.NextDouble () * 2 - 1) * colVariationFactor;
-
+                        int rando = spawnPrng.Next(0, 3);
+                        float r = 0f;
+                        float g = 0f;
+                        float b = 0f;
+                        if (rando == 0) {
+                            r = 144f;
+                            g = 61f;
+                            b = 88f;
+                        } else if (rando == 1) {
+                            r = 204f;
+                            g = 153f;
+                            b = 255f;
+                        } else if (rando == 2) {
+                            r = 255f;
+                            g = 205f;
+                            b = 204f;
+                        }
+                        r /= 255f;
+                        g /= 255f;
+                        b /= 255f;
                         // Spawn
                         MeshRenderer tree = Instantiate (treePrefab, tileCentres[x, y], rot);
                         tree.transform.parent = treeHolder;
                         tree.transform.localScale = Vector3.one * scale;
-                        tree.material.color = new Color (r, g, b);
+                        //tree.material.color = new Color (r, g, b);
+                        tree.gameObject.transform.GetChild(0).GetChild(1).GetComponent<MeshRenderer>().material.SetColor("_Color", new Color(r, g, b, 1f));
 
                         // Mark tile unwalkable
                         walkable[x, y] = false;
