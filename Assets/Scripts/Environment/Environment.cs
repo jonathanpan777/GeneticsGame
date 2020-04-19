@@ -111,8 +111,8 @@ public class Environment : MonoBehaviour {
 
         for (int i = 0; i < visibleEntities.Count; i++) {
             var visibleAnimal = (Animal) visibleEntities[i];
-            if (visibleAnimal != self && visibleAnimal.genes.isMale != self.genes.isMale) {
-                if (visibleAnimal.currentAction == CreatureAction.SearchingForMate || visibleAnimal.currentAction == CreatureAction.WaitingToMate) {
+            if (visibleAnimal != self && !visibleAnimal.genes.isMale) {
+                if (visibleAnimal.currentAction == CreatureAction.SearchingForMate) {
                     potentialMates.Add (visibleAnimal);
                 }
             }
