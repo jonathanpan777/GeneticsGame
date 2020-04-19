@@ -1,4 +1,3 @@
-# Ecosystem-2
+# Ludum Dare Jam 
 
-Work-in-progress update to my Ecosystem Simulation video: https://youtu.be/r_It_X7v-1E
-Currently reimplementing everything to support a larger world.
+Code behind 72 hour game jam project. Prompt "Keep it Alive". Idea is to have the player try to keep their gene alive in a simulated population of monsters. 
