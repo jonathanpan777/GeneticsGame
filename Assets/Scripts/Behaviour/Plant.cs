@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Plant : LivingEntity {
-    float amountRemaining = 1;
-    const float consumeSpeed = 8;
+    // float amountRemaining = 1;
+    // const float consumeSpeed = 8;
 
     // public float Consume (float amount) {
     //     float amountConsumed = Mathf.Max (0, Mathf.Min (amountRemaining, amount));
@@ -19,9 +19,9 @@ public class Plant : LivingEntity {
     //     return amountConsumed;
     // }
 
-    public float AmountRemaining {
-        get {
-            return amountRemaining;
-        }
-    }
+    // public float AmountRemaining {
+    //     get {
+    //         return amountRemaining;
+    //     }
+    // }
 }

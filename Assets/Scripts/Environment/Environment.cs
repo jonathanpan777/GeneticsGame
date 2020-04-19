@@ -104,7 +104,7 @@ public class Environment : MonoBehaviour {
     }
 
     // Return list of animals of the same species, with the opposite gender, who are also searching for a mate
-    public static List<Animal> SensePotentialMates (Coord coord, Animal self) {
+    public static Animal SensePotentialMates (Coord coord, Animal self) {
         Map speciesMap = speciesMaps[self.species];
         List<LivingEntity> visibleEntities = speciesMap.GetEntities (coord, Animal.maxViewDistance);
         var potentialMates = new List<Animal> ();
@@ -112,13 +112,25 @@ public class Environment : MonoBehaviour {
         for (int i = 0; i < visibleEntities.Count; i++) {
             var visibleAnimal = (Animal) visibleEntities[i];
             if (visibleAnimal != self && visibleAnimal.genes.isMale != self.genes.isMale) {
-                if (visibleAnimal.currentAction == CreatureAction.SearchingForMate) {
+                if (visibleAnimal.currentAction == CreatureAction.SearchingForMate || visibleAnimal.currentAction == CreatureAction.WaitingToMate) {
                     potentialMates.Add (visibleAnimal);
                 }
             }
         }
+        if (potentialMates.Count == 0) {
+            return null;
+        }
+        float MinDist = (tileCentres[self.coord.x, self.coord.y] - tileCentres[potentialMates[0].coord.x, potentialMates[0].coord.y]).sqrMagnitude;
+        Animal MinAnimal = potentialMates[0];
+        for (int i = 0; i < potentialMates.Count; i++) {
+            float sqrDst = (tileCentres[self.coord.x, self.coord.y] - tileCentres[potentialMates[i].coord.x, potentialMates[i].coord.y]).sqrMagnitude;
+            if (sqrDst < MinDist) {
+                MinDist = sqrDst;
+                MinAnimal = potentialMates[i];
+            }
+        }
 
-        return potentialMates;
+        return MinAnimal;
     }
 
     public static Surroundings Sense (Coord coord) {
