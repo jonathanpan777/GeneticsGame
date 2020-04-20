@@ -462,6 +462,7 @@ public class Environment : MonoBehaviour {
                     plantLocs.Add(coord, true);
                     initialPlantCount += 1;
                     currPlantCount += 1;
+                    entity.transform.localScale = Vector3.one;
                 }
             }
         }

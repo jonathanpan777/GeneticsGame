@@ -20,7 +20,7 @@ public class Animal : LivingEntity {
     float timeToDeathByHunger = 200;
     float timeToDeathByThirst = 200;
 
-    float timeToDeathByHorny = 400;
+    float timeToDeathByHorny = 800;
 
     float drinkDuration = 6;
     float eatDuration = 10;
