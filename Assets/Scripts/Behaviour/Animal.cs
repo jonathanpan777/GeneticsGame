@@ -104,8 +104,7 @@ public class Animal : LivingEntity {
         attackUpgrade += 0.05f;
     }
     public static void incrementSpeed() {
-        speedUpgrade += 0.05f;
-        moveSpeed = 1.5f * speedUpgrade;
+        speedUpgrade += 0.20f;
     }
 
 
@@ -133,7 +132,7 @@ public class Animal : LivingEntity {
                 growScale += 0.005f;
                 amountRemaining += 0.005f;
                 transform.localScale = Vector3.one * growScale;
-                moveSpeed = 1.5f * growScale;
+                moveSpeed = 1.5f * growScale * speedUpgrade;
             }
         }
 
@@ -415,7 +414,7 @@ public class Animal : LivingEntity {
 
     void AnimateMove () {
         // Move in an arc from start to end tile
-        moveTime = Mathf.Min (1, moveTime + Time.deltaTime * moveSpeed * moveSpeedFactor);
+        moveTime = Mathf.Min (1, moveTime + Time.deltaTime * moveSpeed * speedUpgrade * moveSpeedFactor);
         //float height = (1 - 4 * (moveTime - .5f) * (moveTime - .5f)) * moveArcHeight * moveArcHeightFactor;
         transform.position = Vector3.Lerp(moveStartPos, moveTargetPos, moveTime);// + Vector3.up * height;
 
