@@ -4,6 +4,28 @@ using UnityEngine;
 
 public class Animal : LivingEntity {
 
+        /**
+    ALL UPGRADE VARIABLES HERE
+    **/
+    public static float sexualUpgrade = 1f; 
+    public static float defenseUpgrade = 1f; 
+    public static float attackUpgrade = 1f; 
+    public static float speedUpgrade = 1f;
+
+    /**
+    EVOLVE TRAITS
+    **/
+    public static bool luckyMate1 = false; 
+    public static bool luckyMate2 = false;
+
+    public static bool fastKids = false; 
+    public static bool opKids = false;
+
+    public static bool stun = false; 
+    public static bool fightBack = false; 
+
+    public static float deathThresh = 0.5f;
+
     public const int maxViewDistance = 10;
 
     [EnumFlags]
@@ -26,7 +48,7 @@ public class Animal : LivingEntity {
     float eatDuration = 10;
     float mateDuration = 20;
 
-    float criticalPercent = 0.7f;
+    float criticalPercent = 0.7f * deathThresh;
 
     // Visual settings:
     float moveArcHeight = .2f;
@@ -101,10 +123,14 @@ public class Animal : LivingEntity {
             }
         }
 
-        if (hunger >= 1) {
-            Die (CauseOfDeath.Hunger);
+        if (hunger >= deathThresh) {
+            if (this.species != Species.Fox) {
+                Die (CauseOfDeath.Hunger);
+            }
         } else if (thirst >= 1) {
-            Die (CauseOfDeath.Thirst);
+            if (this.species != Species.Fox) {
+                Die (CauseOfDeath.Thirst);
+            }
         }
     }
 

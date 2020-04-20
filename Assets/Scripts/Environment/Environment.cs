@@ -5,7 +5,10 @@ using UnityEngine;
 
 public class Environment : MonoBehaviour {
 
+
     const int mapRegionSize = 10;
+
+    public static int totalBunnies = 0;
 
     public static int seed;
     public static Dictionary<Coord, bool> plantLocs = new Dictionary<Coord, bool>();
@@ -187,6 +190,10 @@ public class Environment : MonoBehaviour {
         currPlantCount = initialPlantCount;
     }
 
+    public static void DecrementBunnyCount() {
+        totalBunnies -= 1;
+    }
+
     public static void spawnChild(Coord mateCoord, LivingEntity childPrefab) {
         // entity.Init (mateCoord);
         var entity = Instantiate (childPrefab);
@@ -196,6 +203,7 @@ public class Environment : MonoBehaviour {
         entity.transform.localScale = Vector3.one * entity.growScale;
         entity.Init (mateCoord);
         speciesMaps[entity.species].Add (entity, mateCoord);
+        totalBunnies += 1;
     }
 
     public static Surroundings Sense (Coord coord) {
@@ -457,6 +465,10 @@ public class Environment : MonoBehaviour {
                 entity.Init (coord);
                 
                 speciesMaps[entity.species].Add (entity, coord);
+
+                if (entity.species == Species.Rabbit) {
+                    totalBunnies += 1;
+                }
 
                 if (entity.species == Species.Plant) {
                     plantLocs.Add(coord, true);

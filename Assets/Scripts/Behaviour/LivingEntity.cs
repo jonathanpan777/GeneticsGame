@@ -50,6 +50,9 @@ public class LivingEntity : MonoBehaviour {
             if (this.species == Species.Plant) {
                 Environment.DecrementPlantCount(this.coord, plantPrefab);
             }
+            if (this.species == Species.Rabbit) {
+                Environment.DecrementBunnyCount();
+            }
             Die (CauseOfDeath.Eaten);
         }
 
