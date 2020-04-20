@@ -7,12 +7,20 @@ public class Environment : MonoBehaviour {
 
     const int mapRegionSize = 10;
 
-    public int seed;
+    public static int seed;
+    public static Dictionary<Coord, bool> plantLocs = new Dictionary<Coord, bool>();
 
     [Header ("Trees")]
     public MeshRenderer treePrefab;
+    // public LivingEntity plantPrefab;
+    // public LivingEntity bunnyPrefab;
+    // public LivingEntity foxPrefab;
+    
     [Range (0, 1)]
     public float treeProbability;
+
+    public static int initialPlantCount;
+    public static int currPlantCount;
 
     [Header ("Populations")]
     public Population[] initialPopulations;
@@ -78,6 +86,7 @@ public class Environment : MonoBehaviour {
         return Coord.invalid;
     }
 
+
     public static LivingEntity SenseFood (Coord coord, Animal self, System.Func<LivingEntity, LivingEntity, int> foodPreference) {
         var foodSources = new List<LivingEntity> ();
 
@@ -131,6 +140,62 @@ public class Environment : MonoBehaviour {
         }
 
         return MinAnimal;
+    }
+
+    // public static LivingEntity getPlantPrefab() {
+    //     Environment n = new Environment();
+    //     return n.plantPrefab;
+    // }
+
+
+    public static void DecrementPlantCount (Coord plantCord, LivingEntity planPrefab) {
+        Environment.currPlantCount -= 1;
+        plantLocs.Remove(plantCord);
+        if ((float)Environment.currPlantCount / (float)Environment.initialPlantCount <= .5) {
+            respawnPlants(planPrefab);
+        }
+    }
+
+    static void respawnPlants (LivingEntity planPrefab) {
+        Debug.Log("respawning");
+        var spawnPrng = new System.Random ();
+        var spawnCoords = new List<Coord> (walkableCoords);
+        int i = 0;
+        while (i < initialPlantCount - currPlantCount) {
+            if (spawnCoords.Count == 0) {
+                Debug.Log ("Ran out of empty tiles to spawn initial population");
+                break;
+            }
+            int spawnCoordIndex = spawnPrng.Next (0, spawnCoords.Count);
+            Coord coord = spawnCoords[spawnCoordIndex];
+            
+
+            if (!plantLocs.ContainsKey(coord)) {
+                Debug.Log("spawning plants");
+                spawnCoords.RemoveAt (spawnCoordIndex);
+                var entity = Instantiate (planPrefab);
+                // entity.transform.rotation = Quaternion.Euler(180, 0, 0);
+                // Debug.Log(entity);
+                entity.amountRemaining = 1;
+                entity.transform.localScale = Vector3.one;
+                entity.Init (coord);
+                speciesMaps[entity.species].Add (entity, coord);
+                i++; 
+            }
+            
+        }
+        currPlantCount = initialPlantCount;
+    }
+
+    public static void spawnChild(Coord mateCoord, LivingEntity childPrefab) {
+        // entity.Init (mateCoord);
+        var entity = Instantiate (childPrefab);
+        entity.amountRemaining = 0.15f;
+        entity.growScale = 0.15f;
+        ((Animal)entity).moveSpeed = 1.5f * 0.15f;
+        entity.transform.localScale = Vector3.one * entity.growScale;
+        entity.Init (mateCoord);
+        speciesMaps[entity.species].Add (entity, mateCoord);
     }
 
     public static Surroundings Sense (Coord coord) {
@@ -372,7 +437,8 @@ public class Environment : MonoBehaviour {
     }
 
     void SpawnInitialPopulations () {
-
+        initialPlantCount = 0;
+        currPlantCount = 0; 
         var spawnPrng = new System.Random (seed);
         var spawnCoords = new List<Coord> (walkableCoords);
 
@@ -387,9 +453,16 @@ public class Environment : MonoBehaviour {
                 spawnCoords.RemoveAt (spawnCoordIndex);
 
                 var entity = Instantiate (pop.prefab);
+                entity.transform.localScale = Vector3.one * entity.growScale;
                 entity.Init (coord);
-
+                
                 speciesMaps[entity.species].Add (entity, coord);
+
+                if (entity.species == Species.Plant) {
+                    plantLocs.Add(coord, true);
+                    initialPlantCount += 1;
+                    currPlantCount += 1;
+                }
             }
         }
     }

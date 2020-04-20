@@ -6,6 +6,14 @@ public class LivingEntity : MonoBehaviour {
     public Species species;
     public Material material;
 
+    public MeshRenderer treePrefab;
+    public LivingEntity plantPrefab;
+    public LivingEntity bunnyPrefab;
+    public LivingEntity foxPrefab;
+
+    public float growScale = 0.5f; 
+
+
     public Coord coord;
     //
     [HideInInspector]
@@ -30,8 +38,8 @@ public class LivingEntity : MonoBehaviour {
         }
     }
 
-    public float amountRemaining = 1;
-    public const float consumeSpeed = 8;
+    public float amountRemaining = 1f;
+    public const float consumeSpeed = 8f;
     public float Consume (float amount) {
         float amountConsumed = Mathf.Max (0, Mathf.Min (amountRemaining, amount));
         amountRemaining -= amount * consumeSpeed;
@@ -39,6 +47,9 @@ public class LivingEntity : MonoBehaviour {
         transform.localScale = Vector3.one * amountRemaining;
 
         if (amountRemaining <= 0) {
+            if (this.species == Species.Plant) {
+                Environment.DecrementPlantCount(this.coord, plantPrefab);
+            }
             Die (CauseOfDeath.Eaten);
         }
 

@@ -49,6 +49,12 @@ MonoBehaviour:
   species: 4
   material: {fileID: 2187202483406825298, guid: a129443d858cde147be212914bbca76b,
     type: 3}
+  treePrefab: {fileID: 0}
+  plantPrefab: {fileID: 491534157793795662, guid: 759c92fc2b5c64560800ae5575b15aa1,
+    type: 3}
+  bunnyPrefab: {fileID: 3874918950189636065}
+  foxPrefab: {fileID: 8985062361614467402, guid: 0e0ac3719c48b4615860159e795eb1ca,
+    type: 3}
   coord:
     x: 0
     y: 0

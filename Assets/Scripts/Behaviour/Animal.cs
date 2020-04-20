@@ -16,7 +16,7 @@ public class Animal : LivingEntity {
 
     // Settings:
     float timeBetweenActionChoices = 1;
-    float moveSpeed = 1.5f;
+    public float moveSpeed = 1.5f;
     float timeToDeathByHunger = 200;
     float timeToDeathByThirst = 200;
 
@@ -79,7 +79,7 @@ public class Animal : LivingEntity {
         // Increase hunger and thirst over time
         hunger += Time.deltaTime * 1 / timeToDeathByHunger;
         thirst += Time.deltaTime * 1 / timeToDeathByThirst;
-        if (species == Species.Rabbit) {
+        if (species == Species.Rabbit && growScale >= 1) {
             horny += Time.deltaTime * 1 / timeToDeathByHorny;
         }
 
@@ -92,6 +92,12 @@ public class Animal : LivingEntity {
             float timeSinceLastActionChoice = Time.time - lastActionChooseTime;
             if (timeSinceLastActionChoice > timeBetweenActionChoices) {
                 ChooseNextAction ();
+            }
+            if (growScale < 1) {
+                growScale += 0.005f;
+                amountRemaining += 0.005f;
+                transform.localScale = Vector3.one * growScale;
+                moveSpeed = 1.5f * growScale;
             }
         }
 
@@ -259,6 +265,7 @@ public class Animal : LivingEntity {
                     currentAction = CreatureAction.Mating;
                     mateTarget.currentAction = CreatureAction.Mating;
                     mateTarget.LookAt(this.coord);
+                    Environment.spawnChild(mateTarget.coord, bunnyPrefab);
                 } else {
                     //Debug.Log(path);
                     //Debug.Log(pathIndex);
