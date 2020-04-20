@@ -94,6 +94,20 @@ public class Animal : LivingEntity {
         ChooseNextAction ();
     }
 
+    public static void incrementSex() {
+        sexualUpgrade -= 0.05f;
+    }
+    public static void incrementDefense() {
+        defenseUpgrade += 0.05f;
+    }
+    public static void incrementAttack() {
+        attackUpgrade += 0.05f;
+    }
+    public static void incrementSpeed() {
+        speedUpgrade += 0.05f;
+        moveSpeed = 1.5f * speedUpgrade;
+    }
+
 
 
     protected virtual void Update () {
@@ -102,7 +116,7 @@ public class Animal : LivingEntity {
         hunger += Time.deltaTime * 1 / timeToDeathByHunger;
         thirst += Time.deltaTime * 1 / timeToDeathByThirst;
         if (species == Species.Rabbit && growScale >= 1) {
-            horny += Time.deltaTime * 1 / timeToDeathByHorny;
+            horny += Time.deltaTime * 1 / (timeToDeathByHorny * sexualUpgrade);
         }
 
         // Animate movement. After moving a single tile, the animal will be able to choose its next action
@@ -123,11 +137,11 @@ public class Animal : LivingEntity {
             }
         }
 
-        if (hunger >= deathThresh) {
+        if (hunger >= deathThresh * defenseUpgrade) {
             if (this.species != Species.Fox) {
                 Die (CauseOfDeath.Hunger);
             }
-        } else if (thirst >= 1) {
+        } else if (thirst >= deathThresh * defenseUpgrade) {
             if (this.species != Species.Fox) {
                 Die (CauseOfDeath.Thirst);
             }
