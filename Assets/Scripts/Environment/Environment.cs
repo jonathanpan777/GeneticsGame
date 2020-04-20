@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using TerrainGeneration;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Environment : MonoBehaviour {
 
@@ -10,7 +9,6 @@ public class Environment : MonoBehaviour {
     const int mapRegionSize = 10;
 
     public static int totalBunnies = 0;
-    public Text populationText;
 
     public static int seed;
     public static Dictionary<Coord, bool> plantLocs = new Dictionary<Coord, bool>();
@@ -59,11 +57,6 @@ public class Environment : MonoBehaviour {
         Init ();
         SpawnInitialPopulations ();
 
-        populationText.text = totalBunnies.ToString();
-    }
-
-    void Update() {
-        populationText.text = totalBunnies.ToString();
     }
 
     void OnDrawGizmos () {
