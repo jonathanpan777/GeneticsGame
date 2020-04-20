@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using TerrainGeneration;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Environment : MonoBehaviour {
 
 
     const int mapRegionSize = 10;
 
+    public Text populationText;
     public static int totalBunnies = 0;
 
     public static int seed;
@@ -57,6 +59,11 @@ public class Environment : MonoBehaviour {
         Init ();
         SpawnInitialPopulations ();
 
+    }
+
+    void Update()
+    {
+        populationText.text = totalBunnies.ToString();
     }
 
     void OnDrawGizmos () {
