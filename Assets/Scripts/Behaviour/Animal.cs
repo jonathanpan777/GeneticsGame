@@ -104,7 +104,7 @@ public class Animal : LivingEntity {
         attackUpgrade += 0.05f;
     }
     public static void incrementSpeed() {
-        speedUpgrade += 0.05f;
+        speedUpgrade += 0.20f;
     }
 
 
