@@ -98,7 +98,7 @@ public class Animal : LivingEntity {
         sexualUpgrade -= 0.05f;
     }
     public static void incrementDefense() {
-        defenseUpgrade += 0.05f;
+        defenseUpgrade -= 0.05f;
     }
     public static void incrementAttack() {
         attackUpgrade += 0.05f;
@@ -107,11 +107,18 @@ public class Animal : LivingEntity {
         speedUpgrade += 0.20f;
     }
 
+    public static void fightBackEvolve() {
+        Environment.fightBackGene();
+    }
+
 
 
     protected virtual void Update () {
 
         // Increase hunger and thirst over time
+        if (this == null) {
+            return;
+        }
         hunger += Time.deltaTime * 1 / timeToDeathByHunger;
         thirst += Time.deltaTime * 1 / timeToDeathByThirst;
         if (species == Species.Rabbit && growScale >= 1) {
@@ -366,11 +373,11 @@ public class Animal : LivingEntity {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
             gameObject.GetComponent<Animator>().SetBool("eating", true);
             if (foodTarget && hunger > 0) {
-                float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / eatDuration);
+                float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / (eatDuration * attackUpgrade));
                 if (foodTarget.species == Species.Plant) {
                     eatAmount = ((LivingEntity) foodTarget).Consume (eatAmount);
                 } else {
-                    ((LivingEntity) foodTarget).Consume (1);
+                    ((LivingEntity) foodTarget).Consume (0.125f * defenseUpgrade);
                     eatAmount = eatAmount * 2;
                 }
                 hunger -= eatAmount;
@@ -379,7 +386,7 @@ public class Animal : LivingEntity {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
             gameObject.GetComponent<Animator>().SetBool("eating", true);
             if (thirst > 0) {
-                thirst -= Time.deltaTime * 1 / drinkDuration;
+                thirst -= Time.deltaTime * 1 / (drinkDuration * attackUpgrade);
                 thirst = Mathf.Clamp01 (thirst);
             }
         } else if (currentAction == CreatureAction.Mating) {

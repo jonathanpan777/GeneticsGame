@@ -204,7 +204,7 @@ public class Environment : MonoBehaviour {
     public static void spawnChild(Coord mateCoord, LivingEntity childPrefab) {
         // entity.Init (mateCoord);
         var entity = Instantiate (childPrefab);
-        entity.amountRemaining = 0.15f;
+        entity.amountRemaining = 0.15f * Animal.defenseUpgrade;
         entity.growScale = 0.15f;
         ((Animal)entity).moveSpeed = 1.5f * 0.15f;
         entity.transform.localScale = Vector3.one * entity.growScale;
@@ -228,6 +228,11 @@ public class Environment : MonoBehaviour {
             return current;
         }
         return neighbours[prng.Next (neighbours.Length)];
+    }
+
+    public static void fightBackGene() {
+        preyBySpecies[Species.Rabbit].Add(Species.Fox);
+        predatorsBySpecies[Species.Fox].Add(Species.Rabbit);
     }
 
     /// Get random neighbour tile, weighted towards those in similar direction as currently facing
