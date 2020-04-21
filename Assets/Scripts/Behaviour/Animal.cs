@@ -311,7 +311,7 @@ public class Animal : LivingEntity {
                     currentAction = CreatureAction.Mating;
                     mateTarget.currentAction = CreatureAction.Mating;
                     mateTarget.LookAt(this.coord);
-                    Environment.spawnChild(mateTarget.coord, bunnyPrefab);
+                    Environment.spawnChild(mateTarget.coord, bunnyPrefab, foxPrefab);
                 } else {
                     //Debug.Log(path);
                     //Debug.Log(pathIndex);
@@ -357,6 +357,9 @@ public class Animal : LivingEntity {
     }
 
     protected void LookAt (Coord target) {
+        if (this == null) {
+            return;
+        }
         if (target != coord) {
             Coord offset = target - coord;
             transform.eulerAngles = Vector3.up * Mathf.Atan2 (offset.x, offset.y) * Mathf.Rad2Deg;

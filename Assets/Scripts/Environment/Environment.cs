@@ -11,6 +11,7 @@ public class Environment : MonoBehaviour {
 
     public Text populationText;
     public static int totalBunnies = 0;
+    public static int totalFox = 0;
 
     public static int seed;
     public static Dictionary<Coord, bool> plantLocs = new Dictionary<Coord, bool>();
@@ -201,7 +202,7 @@ public class Environment : MonoBehaviour {
         totalBunnies -= 1;
     }
 
-    public static void spawnChild(Coord mateCoord, LivingEntity childPrefab) {
+    public static void spawnChild(Coord mateCoord, LivingEntity childPrefab, LivingEntity foxPrefab) {
         // entity.Init (mateCoord);
         var entity = Instantiate (childPrefab);
         entity.amountRemaining = 0.15f * Animal.defenseUpgrade;
@@ -211,6 +212,29 @@ public class Environment : MonoBehaviour {
         entity.Init (mateCoord);
         speciesMaps[entity.species].Add (entity, mateCoord);
         totalBunnies += 1;
+
+        if (totalBunnies % 50 == 0) {
+            int extras = ((int) totalBunnies / 50); 
+            if (totalFox != extras + 1) {
+                spawnFox(foxPrefab);
+            }
+        }
+    }
+    public static void spawnFox(LivingEntity foxPrefab) {
+        var spawnPrng = new System.Random ();
+        var spawnCoords = new List<Coord> (walkableCoords);
+        
+        int spawnCoordIndex = spawnPrng.Next (0, spawnCoords.Count);
+        Coord coord = spawnCoords[spawnCoordIndex];
+           
+        Debug.Log("spawning stitch");
+        spawnCoords.RemoveAt (spawnCoordIndex);
+        var entity = Instantiate (foxPrefab);
+        entity.amountRemaining = 1;
+        entity.transform.localScale = Vector3.one;
+        entity.Init (coord);
+        speciesMaps[entity.species].Add (entity, coord);
+        totalFox += 1;
     }
 
     public static Surroundings Sense (Coord coord) {
@@ -482,6 +506,9 @@ public class Environment : MonoBehaviour {
                     totalBunnies += 1;
                 }
 
+                if (entity.species == Species.Rabbit) {
+                    totalFox += 1;
+                }
                 if (entity.species == Species.Plant) {
                     plantLocs.Add(coord, true);
                     initialPlantCount += 1;
