@@ -8,9 +8,11 @@ public class Environment : MonoBehaviour {
 
 
     const int mapRegionSize = 10;
-
+    public LivingEntity plantPrefab;
     public Text populationText;
     public static int totalBunnies = 0;
+    public static int totalFox = 0;
+    public static float respawnPlantRate = 1f;
 
     public static int seed;
     public static Dictionary<Coord, bool> plantLocs = new Dictionary<Coord, bool>();
@@ -59,6 +61,13 @@ public class Environment : MonoBehaviour {
         Init ();
         SpawnInitialPopulations ();
 
+        InvokeRepeating("spawn", 0f, respawnPlantRate);
+    }
+
+    void spawn()
+    {
+        Debug.Log("invoked");
+        respawnPlants(plantPrefab);
     }
 
     void Update()
@@ -83,6 +92,8 @@ public class Environment : MonoBehaviour {
 
     public static void RegisterDeath (LivingEntity entity) {
         speciesMaps[entity.species].Remove (entity, entity.coord);
+        //if (entity.species == Species.Rabbit)
+            //totalBunnies -= 1;
     }
 
     public static Coord SenseWater (Coord coord) {
@@ -161,56 +172,96 @@ public class Environment : MonoBehaviour {
     public static void DecrementPlantCount (Coord plantCord, LivingEntity planPrefab) {
         Environment.currPlantCount -= 1;
         plantLocs.Remove(plantCord);
-        if ((float)Environment.currPlantCount / (float)Environment.initialPlantCount <= .5) {
-            respawnPlants(planPrefab);
-        }
+        //if ((float)Environment.currPlantCount / (float)Environment.initialPlantCount <= .5) {
+        //    respawnPlants(planPrefab);
+        //}
     }
 
-    static void respawnPlants (LivingEntity planPrefab) {
-        Debug.Log("respawning");
-        var spawnPrng = new System.Random ();
-        var spawnCoords = new List<Coord> (walkableCoords);
-        int i = 0;
-        while (i < initialPlantCount - currPlantCount) {
-            if (spawnCoords.Count == 0) {
-                Debug.Log ("Ran out of empty tiles to spawn initial population");
-                break;
-            }
-            int spawnCoordIndex = spawnPrng.Next (0, spawnCoords.Count);
-            Coord coord = spawnCoords[spawnCoordIndex];
-            
+    public static void respawnPlants (LivingEntity planPrefab) {
+        if ((float)Environment.currPlantCount / (float)Environment.initialPlantCount <= 1)
+        {
+            Debug.Log("respawning");
+            var spawnPrng = new System.Random();
+            var spawnCoords = new List<Coord>(walkableCoords);
+            bool i = false;
+            while (!i)
+            {
+                if (spawnCoords.Count == 0)
+                {
+                    Debug.Log("Ran out of empty tiles to spawn initial population");
+                    break;
+                }
+                int spawnCoordIndex = spawnPrng.Next(0, spawnCoords.Count);
+                Coord coord = spawnCoords[spawnCoordIndex];
 
-            if (!plantLocs.ContainsKey(coord)) {
-                Debug.Log("spawning plants");
-                spawnCoords.RemoveAt (spawnCoordIndex);
-                var entity = Instantiate (planPrefab);
-                // entity.transform.rotation = Quaternion.Euler(180, 0, 0);
-                // Debug.Log(entity);
-                entity.amountRemaining = 1;
-                entity.transform.localScale = Vector3.one;
-                entity.Init (coord);
-                speciesMaps[entity.species].Add (entity, coord);
-                i++; 
+
+                if (!plantLocs.ContainsKey(coord))
+                {
+                    Debug.Log("spawning plants");
+                    spawnCoords.RemoveAt(spawnCoordIndex);
+                    var entity = Instantiate(planPrefab);
+                    // entity.transform.rotation = Quaternion.Euler(180, 0, 0);
+                    // Debug.Log(entity);
+                    entity.amountRemaining = 1;
+                    entity.transform.localScale = Vector3.one;
+                    entity.Init(coord);
+                    speciesMaps[entity.species].Add(entity, coord);
+                    i = true;
+                }
+
             }
-            
+            currPlantCount += 1;
         }
-        currPlantCount = initialPlantCount;
     }
 
     public static void DecrementBunnyCount() {
         totalBunnies -= 1;
     }
 
-    public static void spawnChild(Coord mateCoord, LivingEntity childPrefab) {
+    public static void spawnChild(Coord mateCoord, LivingEntity childPrefab, LivingEntity foxPrefab) {
         // entity.Init (mateCoord);
         var entity = Instantiate (childPrefab);
-        entity.amountRemaining = 0.15f;
+        entity.amountRemaining = 0.15f * Animal.defenseUpgrade;
         entity.growScale = 0.15f;
         ((Animal)entity).moveSpeed = 1.5f * 0.15f;
         entity.transform.localScale = Vector3.one * entity.growScale;
         entity.Init (mateCoord);
         speciesMaps[entity.species].Add (entity, mateCoord);
         totalBunnies += 1;
+
+        if (totalBunnies >= 50)
+        {
+            respawnPlantRate = 0.2f;
+            int extras = ((int)totalBunnies / 50);
+            if (totalFox < extras + 1)
+            {
+                spawnFox(foxPrefab);
+            }
+        }
+        if (totalBunnies >= 75) {
+            respawnPlantRate = 0.2f;
+        }
+        if (totalBunnies >= 100) {
+            respawnPlantRate = 0.1f;
+        }
+    }
+
+    public static void spawnFox(LivingEntity foxPrefab)
+    {
+        var spawnPrng = new System.Random();
+        var spawnCoords = new List<Coord>(walkableCoords);
+
+        int spawnCoordIndex = spawnPrng.Next(0, spawnCoords.Count);
+        Coord coord = spawnCoords[spawnCoordIndex];
+
+        Debug.Log("spawning stitch");
+        spawnCoords.RemoveAt(spawnCoordIndex);
+        var entity = Instantiate(foxPrefab);
+        entity.amountRemaining = 1;
+        entity.transform.localScale = Vector3.one;
+        entity.Init(coord);
+        speciesMaps[entity.species].Add(entity, coord);
+        totalFox += 1;
     }
 
     public static Surroundings Sense (Coord coord) {
@@ -228,6 +279,11 @@ public class Environment : MonoBehaviour {
             return current;
         }
         return neighbours[prng.Next (neighbours.Length)];
+    }
+
+    public static void fightBackGene() {
+        preyBySpecies[Species.Rabbit].Add(Species.Fox);
+        predatorsBySpecies[Species.Fox].Add(Species.Rabbit);
     }
 
     /// Get random neighbour tile, weighted towards those in similar direction as currently facing
@@ -472,9 +528,14 @@ public class Environment : MonoBehaviour {
                 entity.Init (coord);
                 
                 speciesMaps[entity.species].Add (entity, coord);
-
-                if (entity.species == Species.Rabbit) {
+                if (entity.species == Species.Rabbit)
+                {
                     totalBunnies += 1;
+                }
+
+                if (entity.species == Species.Fox)
+                {
+                    totalFox += 1;
                 }
 
                 if (entity.species == Species.Plant) {

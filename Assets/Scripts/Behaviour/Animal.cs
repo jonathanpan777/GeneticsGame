@@ -1,16 +1,19 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Animal : LivingEntity {
 
-        /**
+    /**
     ALL UPGRADE VARIABLES HERE
     **/
     public static float sexualUpgrade = 1f; 
     public static float defenseUpgrade = 1f; 
     public static float attackUpgrade = 1f; 
     public static float speedUpgrade = 1f;
+
+    public static int points = 10;
 
     /**
     EVOLVE TRAITS
@@ -95,21 +98,29 @@ public class Animal : LivingEntity {
     }
 
     public static void incrementSex() {
-        sexualUpgrade -= 0.05f;
+        sexualUpgrade -= 0.1f;
     }
     public static void incrementDefense() {
-        defenseUpgrade += 0.05f;
+        defenseUpgrade *= 0.1f;
     }
     public static void incrementAttack() {
-        attackUpgrade += 0.05f;
+        attackUpgrade -= 0.1f;
     }
     public static void incrementSpeed() {
         speedUpgrade += 0.20f;
     }
 
-
+    public static void fightBackEvolve()
+    {
+        Environment.fightBackGene();
+    }
 
     protected virtual void Update () {
+
+        if (this == null)
+        {
+            return;
+        }
 
         // Increase hunger and thirst over time
         hunger += Time.deltaTime * 1 / timeToDeathByHunger;
@@ -136,12 +147,14 @@ public class Animal : LivingEntity {
             }
         }
 
-        if (hunger >= deathThresh * defenseUpgrade) {
+        if (hunger >= deathThresh ){//* defenseUpgrade) {
             if (this.species != Species.Fox) {
+                Environment.DecrementBunnyCount();
                 Die (CauseOfDeath.Hunger);
             }
-        } else if (thirst >= deathThresh * defenseUpgrade) {
+        } else if (thirst >= deathThresh ){//* defenseUpgrade) {
             if (this.species != Species.Fox) {
+                Environment.DecrementBunnyCount();
                 Die (CauseOfDeath.Thirst);
             }
         }
@@ -304,7 +317,17 @@ public class Animal : LivingEntity {
                     currentAction = CreatureAction.Mating;
                     mateTarget.currentAction = CreatureAction.Mating;
                     mateTarget.LookAt(this.coord);
-                    Environment.spawnChild(mateTarget.coord, bunnyPrefab);
+                    Environment.spawnChild(mateTarget.coord, bunnyPrefab, foxPrefab);
+                    points += 1;
+                    Debug.Log(luckyMate1);
+                    float ra = Random.Range(0f, 1f);
+                    Debug.Log(ra);
+                    if (luckyMate1 && ra <= 0.15f || luckyMate2 && ra <= 0.30f)
+                    {
+                        Environment.spawnChild(mateTarget.coord, bunnyPrefab, foxPrefab);
+                        points += 1;
+                    }
+
                 } else {
                     //Debug.Log(path);
                     //Debug.Log(pathIndex);
@@ -350,6 +373,10 @@ public class Animal : LivingEntity {
     }
 
     protected void LookAt (Coord target) {
+        if (this == null)
+        {
+            return;
+        }
         if (target != coord) {
             Coord offset = target - coord;
             transform.eulerAngles = Vector3.up * Mathf.Atan2 (offset.x, offset.y) * Mathf.Rad2Deg;
@@ -366,11 +393,11 @@ public class Animal : LivingEntity {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
             gameObject.GetComponent<Animator>().SetBool("eating", true);
             if (foodTarget && hunger > 0) {
-                float eatAmount = Mathf.Min (hunger, Time.deltaTime * 1 / eatDuration);
+                float eatAmount = Mathf.Min(hunger, Time.deltaTime * 1 / (eatDuration * attackUpgrade));
                 if (foodTarget.species == Species.Plant) {
                     eatAmount = ((LivingEntity) foodTarget).Consume (eatAmount);
                 } else {
-                    ((LivingEntity) foodTarget).Consume (1);
+                    ((LivingEntity)foodTarget).Consume(0.125f * defenseUpgrade);
                     eatAmount = eatAmount * 2;
                 }
                 hunger -= eatAmount;
@@ -379,7 +406,7 @@ public class Animal : LivingEntity {
             gameObject.GetComponent<Animator>().SetBool("mating", false);
             gameObject.GetComponent<Animator>().SetBool("eating", true);
             if (thirst > 0) {
-                thirst -= Time.deltaTime * 1 / drinkDuration;
+                thirst -= Time.deltaTime * 1 / (drinkDuration * attackUpgrade);
                 thirst = Mathf.Clamp01 (thirst);
             }
         } else if (currentAction == CreatureAction.Mating) {
